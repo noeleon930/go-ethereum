@@ -306,82 +306,85 @@ var (
 // the difficulty that a new block should have when created at time given the
 // parent block's time and difficulty. The calculation uses the Homestead rules.
 func calcDifficultyHomestead(time, parentTime uint64, parentNumber, parentDiff *big.Int) *big.Int {
-	// https://github.com/ethereum/EIPs/blob/master/EIPS/eip-2.mediawiki
-	// algorithm:
-	// diff = (parent_diff +
-	//         (parent_diff / 2048 * max(1 - (block_timestamp - parent_timestamp) // 10, -99))
-	//        ) + 2^(periodCount - 2)
+	// // https://github.com/ethereum/EIPs/blob/master/EIPS/eip-2.mediawiki
+	// // algorithm:
+	// // diff = (parent_diff +
+	// //         (parent_diff / 2048 * max(1 - (block_timestamp - parent_timestamp) // 10, -99))
+	// //        ) + 2^(periodCount - 2)
 
-	bigTime := new(big.Int).SetUint64(time)
-	bigParentTime := new(big.Int).SetUint64(parentTime)
+	// bigTime := new(big.Int).SetUint64(time)
+	// bigParentTime := new(big.Int).SetUint64(parentTime)
 
-	// holds intermediate values to make the algo easier to read & audit
-	x := new(big.Int)
-	y := new(big.Int)
+	// // holds intermediate values to make the algo easier to read & audit
+	// x := new(big.Int)
+	// y := new(big.Int)
 
-	// 1 - (block_timestamp -parent_timestamp) // 10
-	x.Sub(bigTime, bigParentTime)
-	x.Div(x, big10)
-	x.Sub(common.Big1, x)
+	// // 1 - (block_timestamp -parent_timestamp) // 10
+	// x.Sub(bigTime, bigParentTime)
+	// x.Div(x, big10)
+	// x.Sub(common.Big1, x)
 
-	// max(1 - (block_timestamp - parent_timestamp) // 10, -99)))
-	if x.Cmp(bigMinus99) < 0 {
-		x.Set(bigMinus99)
-	}
-	// (parent_diff + parent_diff // 2048 * max(1 - (block_timestamp - parent_timestamp) // 10, -99))
-	y.Div(parentDiff, params.DifficultyBoundDivisor)
-	x.Mul(y, x)
-	x.Add(parentDiff, x)
+	// // max(1 - (block_timestamp - parent_timestamp) // 10, -99)))
+	// if x.Cmp(bigMinus99) < 0 {
+	// 	x.Set(bigMinus99)
+	// }
+	// // (parent_diff + parent_diff // 2048 * max(1 - (block_timestamp - parent_timestamp) // 10, -99))
+	// y.Div(parentDiff, params.DifficultyBoundDivisor)
+	// x.Mul(y, x)
+	// x.Add(parentDiff, x)
 
-	// minimum difficulty can ever be (before exponential factor)
-	if x.Cmp(params.MinimumDifficulty) < 0 {
-		x.Set(params.MinimumDifficulty)
-	}
-	// for the exponential factor
-	periodCount := new(big.Int).Add(parentNumber, common.Big1)
-	periodCount.Div(periodCount, expDiffPeriod)
+	// // minimum difficulty can ever be (before exponential factor)
+	// if x.Cmp(params.MinimumDifficulty) < 0 {
+	// 	x.Set(params.MinimumDifficulty)
+	// }
+	// // for the exponential factor
+	// periodCount := new(big.Int).Add(parentNumber, common.Big1)
+	// periodCount.Div(periodCount, expDiffPeriod)
 
-	// the exponential factor, commonly referred to as "the bomb"
-	// diff = diff + 2^(periodCount - 2)
-	if periodCount.Cmp(common.Big1) > 0 {
-		y.Sub(periodCount, common.Big2)
-		y.Exp(common.Big2, y, nil)
-		x.Add(x, y)
-	}
-	return x
+	// // the exponential factor, commonly referred to as "the bomb"
+	// // diff = diff + 2^(periodCount - 2)
+	// if periodCount.Cmp(common.Big1) > 0 {
+	// 	y.Sub(periodCount, common.Big2)
+	// 	y.Exp(common.Big2, y, nil)
+	// 	x.Add(x, y)
+	// }
+	// return x
+
+	return big.NewInt(666666)
 }
 
 // calcDifficultyFrontier is the difficulty adjustment algorithm. It returns the
 // difficulty that a new block should have when created at time given the parent
 // block's time and difficulty. The calculation uses the Frontier rules.
 func calcDifficultyFrontier(time, parentTime uint64, parentNumber, parentDiff *big.Int) *big.Int {
-	diff := new(big.Int)
-	adjust := new(big.Int).Div(parentDiff, params.DifficultyBoundDivisor)
-	bigTime := new(big.Int)
-	bigParentTime := new(big.Int)
+	// diff := new(big.Int)
+	// adjust := new(big.Int).Div(parentDiff, params.DifficultyBoundDivisor)
+	// bigTime := new(big.Int)
+	// bigParentTime := new(big.Int)
 
-	bigTime.SetUint64(time)
-	bigParentTime.SetUint64(parentTime)
+	// bigTime.SetUint64(time)
+	// bigParentTime.SetUint64(parentTime)
 
-	if bigTime.Sub(bigTime, bigParentTime).Cmp(params.DurationLimit) < 0 {
-		diff.Add(parentDiff, adjust)
-	} else {
-		diff.Sub(parentDiff, adjust)
-	}
-	if diff.Cmp(params.MinimumDifficulty) < 0 {
-		diff.Set(params.MinimumDifficulty)
-	}
+	// if bigTime.Sub(bigTime, bigParentTime).Cmp(params.DurationLimit) < 0 {
+	// 	diff.Add(parentDiff, adjust)
+	// } else {
+	// 	diff.Sub(parentDiff, adjust)
+	// }
+	// if diff.Cmp(params.MinimumDifficulty) < 0 {
+	// 	diff.Set(params.MinimumDifficulty)
+	// }
 
-	periodCount := new(big.Int).Add(parentNumber, common.Big1)
-	periodCount.Div(periodCount, expDiffPeriod)
-	if periodCount.Cmp(common.Big1) > 0 {
-		// diff = diff + 2^(periodCount - 2)
-		expDiff := periodCount.Sub(periodCount, common.Big2)
-		expDiff.Exp(common.Big2, expDiff, nil)
-		diff.Add(diff, expDiff)
-		diff = math.BigMax(diff, params.MinimumDifficulty)
-	}
-	return diff
+	// periodCount := new(big.Int).Add(parentNumber, common.Big1)
+	// periodCount.Div(periodCount, expDiffPeriod)
+	// if periodCount.Cmp(common.Big1) > 0 {
+	// 	// diff = diff + 2^(periodCount - 2)
+	// 	expDiff := periodCount.Sub(periodCount, common.Big2)
+	// 	expDiff.Exp(common.Big2, expDiff, nil)
+	// 	diff.Add(diff, expDiff)
+	// 	diff = math.BigMax(diff, params.MinimumDifficulty)
+	// }
+
+	return big.NewInt(666666)
 }
 
 // VerifySeal implements consensus.Engine, checking whether the given block satisfies

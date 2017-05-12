@@ -1,2 +1,1 @@
-../build/bin/geth --nodiscover --nat "any" --mine --minerthreads 1 --syncmode "fast" --rpc --rpccorsdomain "*" --targetgaslimit 5000000 --extradata "noel-testnet"
-
+../build/bin/geth --port 30303 --nodiscover --nat "any" --mine --minerthreads 1 --syncmode "fast" --rpc --rpcport 8545 --rpcaddr "0.0.0.0" --rpcapi "web3,shh,eth,personal,db,debug,net" --rpccorsdomain "*" --targetgaslimit 5000000 --extradata "noel-testnet" console
